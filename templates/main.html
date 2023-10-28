@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+{% load static %}
+<html id='canvas-wrapper'>
+<head>
+    <!-- HTML Meta Tags -->
+    <title>Home \ Alex Vesel</title>
+    <meta name="description" content="Accelerate your market research with PlutusChat, the AI Investing Copilot for retail investors. Access over 100k SEC filings for 7000+ US stock tickers with our GPT-powered chatbot.">
+
+    <!-- Facebook Meta Tags -->
+    <meta property="og:url" content="https://www.alexvesel.com">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Home \ Alex Vesel">
+    <meta property="og:description" content="Accelerate your market research with PlutusChat, the AI Investing Copilot for retail investors. Access over 100k SEC filings for 7000+ US stock tickers with our GPT-powered chatbot.">
+    <meta property="og:image" content="{{ HTTP_HOST }}{% static 'images/plutus-preview.png' %}">
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="twitter:domain" content="plutus.chat">
+    <meta property="twitter:url" content="https://www.alexvesel.com">
+    <meta name="twitter:title" content="Home \ Alex Vesel">
+    <meta name="twitter:description" content="Accelerate your market research with PlutusChat, the AI Investing Copilot for retail investors. Access over 100k SEC filings for 7000+ US stock tickers with our GPT-powered chatbot.">
+    <meta name="twitter:image" content="{{ HTTP_HOST }}{% static 'images/plutus-preview.png' %}">
+        
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, minimum-scale=1" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    <script src="https://kit.fontawesome.com/bfe87d7382.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="144x144" href="static/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="static/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="static/favicon/favicon-16x16.png">
+    <link rel="manifest" href="static/favicon/site.webmanifest">
+    <link rel="mask-icon" href="static/favicon/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#f7f7f8">
+    <meta name="theme-color" content="#f7f7f8">
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R900PTM6DK"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-R900PTM6DK');
+</script>
+
+<body>
+
+{% include 'navbar.html' %}
+
+{% block content%}
+{% endblock content%}
+
+<script>
+    function $$(a){return document.getElementById(a);}
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    function setCookie(name,value,days) {
+        var expires = "";
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    }
+    const csrftoken = getCookie('csrftoken');
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+{% load static %}
+
+<nav class="navbar navbar-light navbar-expand-md">
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+    <a class="navbar-brand " href="/">
+        <img src="{% static 'symbol.svg' %}" width="70" height="70" class="d-inline-block align-top" alt="">
+    </a>
+    <ul class="navbar-nav pt-2">
+      <li class="nav-item active">
+        <a class="nav-link" href="/">About Me</a>
+      </li>
+      <!-- <li class="nav-item">
+        <a class="nav-link" href="#">Projects</a>
+      </li> -->
+      <li class="nav-item">
+        <a class="nav-link" href="{% static 'files/Alex_Vesel_Resume.pdf' %}" target="_blank">Resume</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<script>
+    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+
+    navLinks.forEach(link => {
+    link.addEventListener('mouseenter', () => {
+        link.setAttribute('data-before', '[');
+        link.setAttribute('data-after', ']');
+    });
+
+    link.addEventListener('mouseleave', () => {
+        link.removeAttribute('data-before');
+        link.removeAttribute('data-after');
+    });
+    });   
+</script>

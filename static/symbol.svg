@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="48.650787mm"
+   height="28.5431mm"
+   viewBox="0 0 48.650787 28.5431"
+   version="1.1"
+   id="svg341"
+   inkscape:version="1.2.1 (9c6d41e, 2022-07-14)"
+   sodipodi:docname="symbol.svg"
+   inkscape:export-filename="v.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview343"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="2.6271345"
+     inkscape:cx="61.664144"
+     inkscape:cy="57.286751"
+     inkscape:window-width="1470"
+     inkscape:window-height="869"
+     inkscape:window-x="0"
+     inkscape:window-y="37"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g336" />
+  <defs
+     id="defs338" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-23.952224,-5.3855597)">
+    <g
+       id="g336"
+       transform="matrix(1.9127523,0,0,1.9127523,-177.71624,-382.90316)">
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.1667px;font-family:Gotham;-inkscape-font-specification:Gotham;fill:#000000;stroke-width:1.565"
+         x="115.62859"
+         y="217.8167"
+         id="text289"><tspan
+           sodipodi:role="line"
+           id="tspan287"
+           style="stroke-width:1.565"
+           x="115.62859"
+           y="217.8167">V</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:21.1667px;font-family:Gotham;-inkscape-font-specification:Gotham;fill:#000000;stroke-width:1.565"
+         x="104.79865"
+         y="-203.10583"
+         id="text289-7"
+         transform="scale(1,-1)"><tspan
+           sodipodi:role="line"
+           id="tspan287-5"
+           style="stroke-width:1.565"
+           x="104.79865"
+           y="-203.10583">V</tspan></text>
+    </g>
+  </g>
+</svg>

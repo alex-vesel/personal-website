@@ -1,0 +1,72 @@
+:root {
+    --green: #5bc083;
+    --dark-green: #4aa276;
+    --user-green: #58ba9e;
+    --light-grey: #f7f7f8;
+    --med-grey: #dfdedf;
+    --dark-grey: #a9a9a9;
+    --vdark-grey: #505050;
+    --black: #212121;
+    --black-hover: #323232;
+    /* dark mode */
+    --dm-black: #121212;
+    --dm-grey: #282828;
+    --dm-light-grey: #383838;
+}
+
+/* general */
+body {
+    font-family: Gotham, sans-serif;
+}
+
+/* home */
+.container {
+    height: 100%;
+    margin-top: 50px;
+    width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-left: auto;
+    margin-right: auto;
+}
+  
+.profile-img {
+    border-radius: 0;
+    max-width: 90%;
+    /* clip-path: polygon(15% 0, 100% 0, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0 100%, 0 15%); */
+  }
+
+/* navbar */
+.navbar-nav .nav-link:hover:before {
+    content: attr(data-before);
+}
+  
+.navbar-nav .nav-link:hover:after {
+    content: attr(data-after);
+}
+
+.nav-item {
+    width: 140px;
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.navbar {
+    justify-content: center;
+}
+
+@media (min-width: 576px) {
+    .container {
+        width: 80%;
+    }
+
+    .profile-img {
+        max-width: 100%;
+    }
+}
+
+@media (min-width: 992px) {
+    .container {
+        width: 60%;
+    }
+}
