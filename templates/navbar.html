@@ -1,12 +1,15 @@
 {% load static %}
 
 <nav class="navbar navbar-light navbar-expand-md">
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+  <a class="navbar-brand navbar-brand-sm" href="/">
+    <img src="{% static 'symbol.svg' %}" width="70" height="70" class="d-inline-block align-top" alt="">
+  </a>  
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-    <a class="navbar-brand " href="/">
-        <img src="{% static 'symbol.svg' %}" width="70" height="70" class="d-inline-block align-top" alt="">
+    <a class="navbar-brand navbar-brand-md" href="/">
+        <img src="{% static 'symbol.svg' %}" width="70" height="70" class="d-inline-block align-top navbar-img-md" alt="">
     </a>
     <ul class="navbar-nav pt-2">
       <li class="nav-item active">
@@ -36,4 +39,16 @@
         link.removeAttribute('data-after');
     });
     });   
+
+    const navbarToggler = document.querySelector('.navbar-toggler');
+    const navbarCollapse = document.querySelector('.navbar-collapse');
+
+    document.addEventListener('click', function(event) {
+      const isClickInsideNavbar = navbarCollapse.contains(event.target);
+      const isClickOnNavbarToggler = navbarToggler.contains(event.target);
+
+      if (!isClickInsideNavbar && !isClickOnNavbarToggler) {
+        navbarCollapse.classList.remove('show');
+      }
+    });
 </script>

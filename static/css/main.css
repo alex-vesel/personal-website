@@ -65,8 +65,60 @@ body {
     }
 }
 
+@media (min-width: 768px) {
+    .navbar-brand-sm {
+        display: none;
+    }
+}
+
 @media (min-width: 992px) {
     .container {
         width: 60%;
     }
 }
+
+@media (max-width: 767.98px) {
+    .navbar-collapse {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      overflow-y: auto;
+      background-color: #f8f9fa;
+      transition: all 0.2s ease-in-out;
+      text-align: center;
+    }
+  
+    .navbar-collapse.show {
+      left: 0;
+    }
+
+    .navbar-nav {
+        margin-left: auto;
+    }
+    
+    .nav-item {
+        width: auto;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    .navbar-brand-md {
+        width: auto;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    .navbar-img-md {
+        margin-top: 25px;
+        margin-bottom: 25px
+    }
+
+    .navbar-toggler {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 9999;
+    }
+  }
