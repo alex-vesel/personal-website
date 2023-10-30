@@ -23,9 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-5&wdn+jml&6mxn3gsn(7l3+4tqjis!52phwlxig)7kva65ze46"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+from parameters import DEBUG
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '35.193.174.1', 'www.alexvesel.com']
+ROOT_URL = 'www.alexvesel.com'
 
 
 # Application definition
@@ -39,7 +40,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     'personalwebsite',
-    'bakery',
 ]
 
 MIDDLEWARE = [
@@ -121,13 +121,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# Build
-BUILD_DIR = '/Users/alexvesel/Documents/personalwebsite/build/'
-
-BAKERY_VIEWS = (
-    'home.views.HomeView',
-)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
