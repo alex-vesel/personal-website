@@ -53,6 +53,7 @@ body {
 
 .navbar {
     justify-content: center;
+    background-color: white
 }
 
 @media (min-width: 576px) {
@@ -77,6 +78,7 @@ body {
     }
 }
 
+/* shrink mode */
 @media (max-width: 767.98px) {
     .navbar-collapse {
       position: fixed;
@@ -115,10 +117,23 @@ body {
         margin-bottom: 25px
     }
 
+    .navbar-img-sm {
+        margin-top: 10px;
+        margin-bottom: 10px
+    }
+
     .navbar-toggler {
         position: fixed;
         top: 15px;
         right: 15px;
         z-index: 9999;
+    }
+
+    .profile-img {
+        padding-bottom: 30px;
+    }
+
+    .container {
+        margin-top: 10px;
     }
   }
