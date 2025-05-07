@@ -1,0 +1,261 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Container layout with positioned sidebar -->
+<div class="page-layout">
+    <!-- Sidebar for Table of Contents -->
+    <div class="toc-sidebar-container">
+        <div class="toc-sidebar">
+            <h5>Contents</h5>
+            <ul class="toc-list">
+                <li class="toc-item"><a href="#introduction" class="toc-link">Introduction</a></li>
+                <li class="toc-item">
+                    <a href="#hardware" class="toc-link">Hardware</a>
+                    <ul class="nested-toc">
+                        <li class="toc-item"><a href="#robot-hardware" class="toc-link">Robot Hardware</a></li>
+                        <li class="toc-item"><a href="#teleoperation-hardware" class="toc-link">Teleoperation Hardware</a></li>
+                        <li class="toc-item"><a href="#computer-hardware" class="toc-link">Computer Hardware</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#software" class="toc-link">Software</a>
+                    <ul class="nested-toc">
+                        <li class="toc-item"><a href="#teleoperation" class="toc-link">Teleoperation</a></li>
+                        <li class="toc-item"><a href="#modelling" class="toc-link">Modelling</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#problems-and-solutions" class="toc-link">Problems and Solutions</a>
+                    <ul class="nested-toc">
+                        <li class="toc-item"><a href="#action-chunking" class="toc-link">Action Chunking</a></li>
+                        <li class="toc-item"><a href="#dagger-and-dart" class="toc-link">DAgger and DART</a></li>
+                        <li class="toc-item"><a href="#code-efficiency-improvements" class="toc-link">Code Efficiency Improvements</a></li>
+                        <li class="toc-item"><a href="#pymycobot-package" class="toc-link">pymycobot Package</a></li>
+                        <li class="toc-item"><a href="#threading-for-data-capture" class="toc-link">Threading for Data Capture</a></li>
+                        <li class="toc-item"><a href="#intel-realsense-ir" class="toc-link">Intel Realsense IR Projector</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item"><a href="#results" class="toc-link">Results</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Main content - centered in page -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 blog-content">
+            <div class="col-md-12 mb-4">
+                <h3>Robotic Manipulation at Home via Imitation Learning</h3>
+            </div>
+            
+            <!-- intro -->
+            <div id="introduction">
+                <p>This article describes some of my initial experiments with real-world robotic manipulation. While I read many papers on robotic manipulation as part of my Masters at Stanford (CS326!) and worked on hand position sensing for Tesla's Optimus when I interned there in the summer of 2023, I figured there is no better way to learn about robotic manipulation than to try and do it in the real world. Since my interest and expertise is in artificial intelligence and machine learning, I primarily focused on the software side of robotics and purchased a MyCobot 280 M5Stack with the goal to get it to reliably pick up a small orange earplug and return to its starting position via teleoperation and behavior cloning. The following describes my setup, software framework, and how I discovered and resolved problems along the way to achieve this task!</p>
+            </div>
+
+            <!-- hardware -->
+            <div id="hardware">
+                <h4>Hardware</h4>
+                
+                <div id="robot-hardware">
+                    <h5>Robot Hardware</h5>
+                    <p>I selected the Elephant Robotics MyCobot 280 M5Stack as my robot arm for the project primarily due to it having 6 degrees of freedom, low weight, an arm radius that would fit my desk, and an effective price point. I used the Elephant Robotics adaptive gripper as my manipulator. The MyCobot has a Python API pymycobot that interfaces with the arm's firmware to control the joints and gripper (however I ran into subtle problems with this library, more on this later). I likewise selected the Intel Realsense D435i as my primary workspace camera for the project due to its low minimum depth distance and integrated IMU which I figured could be useful for future projects involving 3D reconstruction and/or NERFs.</p>
+                    <p>I performed my initial experiments just using the workspace camera as my primary sensing modality, but ran into problems where the robot would get "confused" when it approached the earplug, starting to go back up before the earplug was securely in the gripper. I realized this problem was due to state aliasing where the arm occluded the workspace camera's view of the gripper when the arm was in a low position, and as such, the model could not know if the gripper had the earplug or not. I resolved this problem by adding a wide FOV fisheye wrist camera to the arm.</p>
+                </div>
+                
+                <div id="teleoperation-hardware">
+                    <h5>Teleoperation Hardware</h5>
+                    <p>There are numerous ways to teleoperate a single 6 DoF robot arm, including using a second "leader" arm to guide the real robot "follower" arm, using some 6 DoF tracker (VR controller, ArUco tracking) and inverse kinematics to control the arm's end effector position, or direct control of the joints using a keyboard or joystick. I ultimately decided to go with direct control via an Xbox wireless controller due to the ease of setup.</p>
+                    <!-- side by side image mycobot_diagram.png and xbox_mapping.png -->
+                    <div class="image-with-caption">
+                        <p style="display: flex; justify-content: center; align-items: center; gap: 10px;"></p>
+                            <img src="{% static 'images/blog/imitation_learning/mycobot_diagram.png' %}" alt="MyCobot Diagram" style="width: 35%; object-fit: contain; margin-right: 10px;">
+                            <img src="{% static 'images/blog/imitation_learning/xbox_mapping.png' %}" alt="Xbox Mapping" style=" width: 55%; object-fit: contain;">
+                        </p>
+                        <p class="caption" style="margin-bottom: 5px;">Xbox controller mapping for teleoperation.</p>
+                    </div>
+                </div>
+
+                <div id="computer-hardware">
+                    <h5>Computer Hardware</h5>
+                    <p>I performed all teleoperation data collection using my MacBook Air M2, transferring it over to my PC build for training on an Nvidia 2060 Super.</p>
+                </div>
+            </div>
+
+            <!-- software -->
+            <div id="software">
+                <h4>Software</h4>
+
+                <div id="teleoperation">
+                    <h5>Teleoperation</h5>
+                    <p>I built a custom teleoperation data collection framework. At every timestep the framework receives the teleop command from the joystick, then captures the images from the cameras, logs the images and associated metadata, and then executes the command on the robot. I found it to be extremely important that the order of these events is extremely important so as not to violate the Markov assumption. In early experiments, I captured the teleop command then immediately executed the command, followed by capturing the images. The problem with this is that by the time the images are captured the robot is already moving, resulting in blurry images. More importantly, even ignoring the blur problem, capturing the images after executing the command violates causality in that the command from the expert now corresponds to some image from the future. This was a very subtle issue that caused big modelling problems, and I found that the corresponding models lacked fine manipulation skills and could not pick up the earplug. Once I fixed the order of these operations the model immediately improved.</p>
+                </div>
+
+                <div id="modelling">
+                    <h5>Modelling</h5>
+                    <p>I used a neural network I call ImageAngleNet to model the classic behavior cloning objective of:</p>
+                    <div class="image-with-caption">
+                        <p><img src="{% static 'images/blog/imitation_learning/behavior_cloning_objective.png' %}" alt="Behavior Cloning Objective" style="max-width: 70%; height: auto;"></p>
+                        <p class="caption">The behavior cloning objective. State and action pairs are drawn from the dataset of expert demonstrations.</p>
+                    </div>
+                    <p>The model receives the aligned RGB and depth image from the workspace Intel Realsense camera, the RGB image from the fisheye wrist camera, and the current robot joint angles and preprocessed as follows: the images are resized to 224x224 and normalized by the max value for each channel (255 for RGB and 4096 for the depth channels), then normalized between -1 and 1. I only used hue/saturation/value jitter for data augmentation.</p>
+                    <p>The preprocessed images are then passed into my custom ResNet10, which is a typical ResNet with a single residual residual block in each of the four ResNet stages (I try to keep my models as small as required to achieve the task, I found that scaling to a ResNet 18 provided no benefit). The arm angles are likewise processed by a small fully connected network (FCN). The features from these processed observations are then concatenated and then processed by another FCN neck before being passed into the output heads. One output head uses a TanH activation function to predict the 7 DoF (6 for the arm, 1 for the gripper) angle delta for each action chunk and the other output head predicts the auxiliary binary classification task of whether the gripper has an object in its control or not.</p>
+                    <!-- image angle net imageanglenetdiagram.png -->
+                    <div class="image-with-caption">
+                        <p><img src="{% static 'images/blog/imitation_learning/imageanglenetdiagram.png' %}" alt="ImageAngleNet Architecture" style="max-width: 100%; height: auto;"></p>
+                        <p class="caption">ImageAngleNet architecture. The model receives the RGB and depth images from the workspace camera, the RGB image from the wrist camera, and the current joint angles as input. The model predicts the angle delta for each action chunk and whether the gripper has an object in its control.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Problems and Solutions -->
+            <div id="problems-and-solutions">
+                <h4>Problems and Solutions</h4>
+                <p>I encountered a number of subtle problems when trying to get behavior cloning to work. This section describes the problems and the solutions I used to overcome them.</p>
+
+                <div id="action-chunking">
+                    <h5>Action Chunking</h5>
+                    <p>The classic problem with single step behavior cloning is compounding errors. In this archetypal setting, a model is trained to predict the expert's action one step into the future. However, small errors in each prediction compound as the policy is rolled out, leading the robot into out of distribution states where error accumulates more. Action chunking addresses this problem by instead training the model to predict the next k steps of expert actions, effectively reducing the effective horizon of any given task by k-fold, leading to less possibility for compounding errors. This method can be combined with temporal ensembling whereby overlapping action predictions can be averaged to decrease prediction noise by incorporating the k predictions for any given timestep. I found that this method instantly improved the success rate of my model.</p>
+                    <div class="image-with-caption">
+                        <p><img src="{% static 'images/blog/imitation_learning/action_chunking.png' %}" alt="Action Chunking" style="max-width: 80%; height: auto;"></p>
+                        <p class="caption">Two approaches to action chunking with chunk size 4. On top the model is called once every 4 timesteps and the chunk is rolled out with no correction. On bottom the model is called every timestep and overlapping action predictions are averaged using an exponential weighting scheme to reduce prediction variance. I used the approach on the bottom with chunk size of 5. <sup>1</sup></p>
+                    </div>
+                </div>
+
+                <div id="dagger-and-dart">
+                    <h5>DAgger and DART</h5>
+                    <p>Another solution to compounding error involves modifications to the data collection process. As mentioned above, one problem with the compounding error in behavior cloning models is the robot reaching states not seen in the expert distribution. For example, I found that when I collected data I sent the robot arm straight towards the earplug from the starting position, meaning that the only states where the robot is near the workspace are when it is also near the earplug. This led to models that could not recover when the robot went to a low position near the workspace but not near the earplug. The Dataset Aggregation (DAgger) method involves iteratively querying the expert to label states that the model reaches when rolled out <sup>3</sup>. In my case, I took a similarly inspired approach to start my data collection in different robot starting states, i.e. close to the workspace but not near the earplug.</p>
+                    <p>Another method called Disturbances for Augmenting Robot Trajectories (DART) more directly addresses the problem of compounding error by injecting a small amount of noise in the expert's actions as they are collecting data. In my case, I sampled a small amount of gaussian noise and added it to the commands I sent to the robot through teleop. This method works by effectively allowing the model to recover from small amounts of error in its predictions because these small error states are now effectively in-distribution of the training set.</p>
+                    <div class="image-with-caption">
+                        <p><img src="{% static 'images/blog/imitation_learning/dart_image.png' %}" alt="DART Example" style="max-width: 90%; height: auto;"></p>
+                        <p class="caption">Examples of different approaches to addressing compound error during data collection. The typical off-policy approach suffers from compounding error, while on-policy methods like DAgger can correct from the current policy's error states. DART adds Gaussian noise to the data collection process and allows the model to correct from small errors during rollout. <sup>2</sup></p>
+                    </div>
+                    <p>I combined both of these methods in my data collection process, DART was an "always-on" method in my data collection while DAgger was used to address common errors I found as I iterated on models.</p>
+                </div>
+
+                <div id="code-efficiency-improvements">
+                    <h5>Code Efficiency Improvements</h5>
+                    <p>My first pass at writing the teleop and control code was quite slow at ~1 Hz control frequency. After investigating the bottleneck points, I was able to increase control frequency to ~15 Hz which allowed for a smaller teleop angle delta scale, more accurate modelling, and smoother control. I would like to get this control rate even faster, but the primary bottleneck now is the overall speed of the MyCobot firmware and the fact that MyCobot firmware requires two commands to move the robot arm and gripper as opposed to just one command to move them both simultaneously. The following are inefficiencies I discovered and how I improved them to get the 15Hz control rate.</p>
+                </div>
+
+                <div id="pymycobot-package">
+                    <h5>pymycobot Package</h5>
+                    <p>Elephantic Robotics offers the pymycobot Python package to allow interfacing with the firmware on the MyCobot 280. The package offers simple Python functions that send serial commands to the robot and is quite easy to use and get started with. However, I found a few inefficiencies in the package's code that significantly slowed down the control rate of the robot. For example, there are a number of commands in the MyCobot firmware that send a response, such as getting the angle of the encoders, and there are also many commands that do not send a response, such as commanding the servos. However, in the Python package sending any given message waits for a response or timeout, and sends the message up to three times until the response or timeout is received. This effectively means for messages with no response we must wait 3x the timeout to return. I significantly increased the control rate by adding a list of no response commands that would break out of this timeout loop immediately after sending the first message. I also decreased the timeout length as I found a shorter duration was adequate to safely receive responses.</p>
+                </div>
+
+                <div id="threading-for-data-capture">
+                    <h5>Threading for Data Capture and Logging</h5>
+                    <p>Another major bottleneck to my code performance was performing all camera capture and teleop logging sequentially. Once I put the two cameras' data capture on dedicated threads and used multiple threads to log all the images and metadata associated with teleop performance significantly increased.</p>
+                </div>
+
+                <div id="intel-realsense-ir">
+                    <h5>Intel Realsense IR Projector</h5>
+                    <p>I found that the Intel Realsense depth camera I was using had small dot artifacts in the RGB image, especially in low light conditions. These dots caused a lot of variation in the resulting RGB images, leading to models that were very sensitive to noise. For example, I found that the variation in predicted angle deltas could vary by 1 to 2 degrees even though the RGB image features looked similar to the human eye. Through some internet research, I found that this dot problem was caused by the autoexposure on the Intel Realsense camera. Once I turned off autoexposure the dots disappeared and the model produced more consistent outputs under image noise.</p>
+                    <!-- side by side images with caption, rgb_frame_noised.png, rgb_frame_denoised.png -->
+                    <div class="image-with-caption">
+                        <p style="display: flex; justify-content: center; align-items: center; gap: 10px;"></p>
+                            <img src="{% static 'images/blog/imitation_learning/rgb_frame_noised_cropped.png' %}" alt="RGB Frame Noised" style="height: 156px; width: auto; object-fit: contain; margin-right: 10px;">
+                            <img src="{% static 'images/blog/imitation_learning/rgb_frame_denoised_cropped.png' %}" alt="RGB Frame Denoised" style="height: 156px; width: auto; object-fit: contain;">
+                        </p>
+                        <p class="caption" style="margin-bottom: 5px;">Left: Crop of a RGB frame with autoexposure on, showing dot artifacts.</p>
+                        <p class="caption">Right: Crop of a RGB frame with autoexposure off, showing no dot artifacts.</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="results">
+                <h4>Results</h4>
+                <p>Retraining models, results coming soon :P</p>
+            </div>
+
+            <!-- References -->
+            <div id="references">
+                <h4>References</h4>
+                <ol>
+                    <li><a href="https://arxiv.org/abs/2304.13705" target="_blank">Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware</a></li>
+                    <li><a href="https://arxiv.org/abs/1703.09327" target="_blank">DART: Noise Injection for Robust Imitation Learning</a></li>
+                    <li><a href="https://arxiv.org/abs/1011.0686" target="_blank">A Reduction of Imitation Learning and Structured Prediction to No-Regret Online Learning</a></li>
+                </ol>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all section elements
+    const sections = document.querySelectorAll('div[id]');
+    const tocLinks = document.querySelectorAll('.toc-link');
+    
+    // Get the navbar height to account for sticky header
+    const navbar = document.querySelector('.navbar');
+    const navbarHeight = navbar ? navbar.offsetHeight : 0;
+    const scrollOffset = navbarHeight + 20; // Additional padding
+    
+    // Function to determine which section is currently in view
+    function highlightCurrentSection() {
+        // Find the section that is currently in view
+        let currentSectionId = '';
+        
+        // Check sections in reverse order (bottom to top)
+        // This ensures the current section stays highlighted until we reach the next one
+        for (let i = sections.length - 1; i >= 0; i--) {
+            const section = sections[i];
+            const rect = section.getBoundingClientRect();
+            
+            // If the top of the section is above the bottom of the navbar + some padding
+            if (rect.top <= scrollOffset) {
+                currentSectionId = section.id;
+                break;
+            }
+        }
+        
+        // If we're at the very top of the page and no section is in view
+        if (!currentSectionId && sections.length > 0) {
+            currentSectionId = sections[0].id;
+        }
+        
+        // Remove active class from all links
+        tocLinks.forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        // Add active class to the current section link
+        if (currentSectionId) {
+            const activeLink = document.querySelector(`.toc-link[href="#${currentSectionId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+    }
+    
+    // Highlight the current section on scroll
+    window.addEventListener('scroll', highlightCurrentSection);
+    
+    // Initial highlight
+    highlightCurrentSection();
+    
+    // Smooth scrolling for TOC links
+    tocLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            
+            if (targetElement) {
+                // Account for the navbar height when scrolling
+                const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - scrollOffset + 1;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
