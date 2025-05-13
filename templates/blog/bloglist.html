@@ -1,4 +1,5 @@
 {% extends 'main.html' %}
+{% block title %}Blog \ Alex Vesel{% endblock %}
 {% load static %}
 
 {% block content %}
@@ -13,10 +14,13 @@
 
             <div class="col-md-12">
                 <a href="{% url 'imitationlearning' %}" class="text-decoration-none basic-text">
-                    <div class="mb-4">
-                        <div class="">
+                    <div class="mb-4 d-flex align-items-center">
+                        <div class="me-3">
+                            <img src="{% static 'images/blog/imitation_learning/imitation_learning_gif.gif' %}" alt="Imitation Learning GIF" class="img-fluid" style="max-width: 250px;">
+                        </div>
+                        <div>
                             <h5 class="card-title mb-3">Robotic Manipulation at Home via Imitation Learning</h5>
-                            <p class="">This article describes some of my initial experiments with real-world robotic manipulation.  While I read many papers on robotic manipulation as part of my Masters at Stanford and worked on hand position sensing for Tesla’s Optimus when I interned there in the summer of 2023, I figured there is no better way to learn about robotic manipulation than to try and do it in the real world</p>
+                            <p class="">This article describes some of my initial experiments with real-world robotic manipulation.  While I read many papers on robotic manipulation as part of my Masters at Stanford and worked on hand position sensing for Tesla’s Optimus when I interned there in the summer of 2023, I figured there is no better way to learn about robotic manipulation than to try and do it in the real world.</p>
                         </div>
                     </div>
                 </a>

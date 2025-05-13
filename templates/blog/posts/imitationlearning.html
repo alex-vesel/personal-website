@@ -1,4 +1,5 @@
 {% extends 'main.html' %}
+{% block title %}Imitation Learning \ Alex Vesel{% endblock %}
 {% load static %}
 
 {% block content %}
@@ -37,6 +38,7 @@
                     </ul>
                 </li>
                 <li class="toc-item"><a href="#results" class="toc-link">Results</a></li>
+                <li class="toc-item"><a href="#future-work" class="toc-link">Future Work</a></li>
             </ul>
         </div>
     </div>
@@ -52,6 +54,7 @@
             <!-- intro -->
             <div id="introduction">
                 <p>This article describes some of my initial experiments with real-world robotic manipulation. While I read many papers on robotic manipulation as part of my Masters at Stanford (CS326!) and worked on hand position sensing for Tesla's Optimus when I interned there in the summer of 2023, I figured there is no better way to learn about robotic manipulation than to try and do it in the real world. Since my interest and expertise is in artificial intelligence and machine learning, I primarily focused on the software side of robotics and purchased a MyCobot 280 M5Stack with the goal to get it to reliably pick up a small orange earplug and return to its starting position via teleoperation and behavior cloning. The following describes my setup, software framework, and how I discovered and resolved problems along the way to achieve this task!</p>
+                <p>The code for this project is available at <a href="https://github.com/alex-vesel/robotics/" target="_blank">https://github.com/alex-vesel/robotics/</a></p>
             </div>
 
             <!-- hardware -->
@@ -62,6 +65,10 @@
                     <h5>Robot Hardware</h5>
                     <p>I selected the Elephant Robotics MyCobot 280 M5Stack as my robot arm for the project primarily due to it having 6 degrees of freedom, low weight, an arm radius that would fit my desk, and an effective price point. I used the Elephant Robotics adaptive gripper as my manipulator. The MyCobot has a Python API pymycobot that interfaces with the arm's firmware to control the joints and gripper (however I ran into subtle problems with this library, more on this later). I likewise selected the Intel Realsense D435i as my primary workspace camera for the project due to its low minimum depth distance and integrated IMU which I figured could be useful for future projects involving 3D reconstruction and/or NERFs.</p>
                     <p>I performed my initial experiments just using the workspace camera as my primary sensing modality, but ran into problems where the robot would get "confused" when it approached the earplug, starting to go back up before the earplug was securely in the gripper. I realized this problem was due to state aliasing where the arm occluded the workspace camera's view of the gripper when the arm was in a low position, and as such, the model could not know if the gripper had the earplug or not. I resolved this problem by adding a wide FOV fisheye wrist camera to the arm.</p>
+                    <div class="image-with-caption">
+                        <p><img src="{% static 'images/blog/imitation_learning/workspace.png' %}" alt="ImageAngleNet Architecture" style="max-width: 90%; height: auto;"></p>
+                        <p class="caption">An image of the robot workspace and sensors.</p>
+                    </div>
                 </div>
                 
                 <div id="teleoperation-hardware">
@@ -100,7 +107,7 @@
                         <p class="caption">The behavior cloning objective. State and action pairs are drawn from the dataset of expert demonstrations.</p>
                     </div>
                     <p>The model receives the aligned RGB and depth image from the workspace Intel Realsense camera, the RGB image from the fisheye wrist camera, and the current robot joint angles and preprocessed as follows: the images are resized to 224x224 and normalized by the max value for each channel (255 for RGB and 4096 for the depth channels), then normalized between -1 and 1. I only used hue/saturation/value jitter for data augmentation.</p>
-                    <p>The preprocessed images are then passed into my custom ResNet10, which is a typical ResNet with a single residual residual block in each of the four ResNet stages (I try to keep my models as small as required to achieve the task, I found that scaling to a ResNet 18 provided no benefit). The arm angles are likewise processed by a small fully connected network (FCN). The features from these processed observations are then concatenated and then processed by another FCN neck before being passed into the output heads. One output head uses a TanH activation function to predict the 7 DoF (6 for the arm, 1 for the gripper) angle delta for each action chunk and the other output head predicts the auxiliary binary classification task of whether the gripper has an object in its control or not.</p>
+                    <p>The preprocessed images are then passed into my custom ResNet10, which is a typical ResNet with a single residual residual block in each of the four ResNet stages (I try to keep my models as small as required to achieve the task, I found that scaling to a ResNet 18 provided no benefit). The arm angles are likewise processed by a small fully connected network (FCN). The features from these processed observations are then concatenated and then processed by another FCN neck before being passed into the output heads. One output head uses a TanH activation function to predict the 7 DoF (6 for the arm, 1 for the gripper) angle delta for each action chunk and the other output head predicts the auxiliary binary classification task of whether the gripper has an object in its control or not. This was useful for debugging the policy during execution.</p>
                     <!-- image angle net imageanglenetdiagram.png -->
                     <div class="image-with-caption">
                         <p><img src="{% static 'images/blog/imitation_learning/imageanglenetdiagram.png' %}" alt="ImageAngleNet Architecture" style="max-width: 100%; height: auto;"></p>
@@ -168,7 +175,52 @@
             <!-- Results -->
             <div id="results">
                 <h4>Results</h4>
-                <p>Retraining models, results coming soon :P</p>
+                <p>The following videos showcase the model's performance on the earplug manipulation task. All videos are 1x speed and autonomous. The slight jerkiness in the motion of the robot is due to the model outputting small angle deltas and the overall processing speed of running the model and sending commands being longer than the time it takes for the robot to move to the commanded position. The primary speed limiter is the speed of the MyCobot firmware, not running the model.</p>
+                <p>The video on the right is an extra video showing a wider perspective of the demonstration while the two videos on the left are the wrist and workspace images that are actually fed to the</p>
+                <!-- add imitation_learning_vid1.mov -->
+                <div class="video-container image-with-caption">
+                    <video controls style="max-width: 90%; height: auto;">
+                        <source src="{% static 'images/blog/imitation_learning/imitation_learning_vid1.mp4' %}" type="video/mp4">
+                    </video>
+                    <p class="caption">Video of the model picking up the earplug and returning to the starting position.</p>
+                </div>
+
+                <div class="video-container image-with-caption">
+                    <video controls style="max-width: 90%; height: auto;">
+                        <source src="{% static 'images/blog/imitation_learning/imitation_learning_vid2.mp4' %}" type="video/mp4">
+                    </video>
+                    <p class="caption">Another video of the model picking up the earplug from a different position and returning to the starting position.</p>
+                </div>
+
+                <div class="video-container image-with-caption">
+                    <video controls style="max-width: 90%; height: auto;">
+                        <source src="{% static 'images/blog/imitation_learning/imitation_learning_vid3.mp4' %}" type="video/mp4">
+                    </video>
+                    <p class="caption">An example of an error case where the earplug is initially placed at the edge of the workspace. I did not collect as much data in this position, so the model goes to the wrong spot initially, closing the gripper on a phantom earplug. The model corrects and moves over to the actual position of the earplug, but accidentally pushes it down. Eventually the model corrects and picks up the earplug without an intervention.</p>
+                </div>
+
+                <div class="video-container image-with-caption">
+                    <video controls style="max-width: 90%; height: auto;">
+                        <source src="{% static 'images/blog/imitation_learning/imitation_learning_vid4.mp4' %}" type="video/mp4">
+                    </video>
+                    <p class="caption">Moving the earplug just as the gripper is about to close. The model can generally move to the new position of the earplug, but not with 100% success rate because less data is collected from states where the gripper is close to the workspace but not near the earplug. The model gets stuck at the end of this demo.</p>
+                </div>
+
+                <div class="video-container image-with-caption">
+                    <video controls style="max-width: 90%; height: auto;">
+                        <source src="{% static 'images/blog/imitation_learning/imitation_learning_vid5.mp4' %}" type="video/mp4">
+                    </video>
+                    <p class="caption">I included some demos of the gripper picking the earplug from my hand instead of from the workspace in training.</p>
+                </div>
+ 
+            </div>
+
+            <!-- Future Work -->
+            <div id="future-work">
+                <h4>Future Work</h4>
+                <p>I have a few ideas for future work. One direction would be train the model to handle a wider range of tasks. The data collection and model training would mostly remain the same, but the model would instead take in a string describing the task to be completed. I have already implemented a few tasks such as placing the earplug in a bowl and picking up different objects. Moving further, I could introduce an orchestrator in the form of an LLM to chain together different subtasks to execute larger goals, such as organizing various objects.</p>
+                <p>Another direction would be to explore sim-to-real and real-to-sim transfer to learn the earplug pickup task. There is some exciting work in this area and it is quite in line with how Nvidia and others in industry are going about creating real-world AI that generalizes.</p>
+                <p>One other direction would be to improve the model's efficiency using reinforcement learning. The current model is trained off of my teleop data, which is not the most efficient at executing the policy. For example, when teleoping I usually would control the first two joints first to get the arm close the earplug, then refine the position using the other joints. In no way am I executing the optimal series of joint controls to minimize the time required to pick up the earplug. I could potentially fine tune the model using an on-policy reinforcement learning algorithm such as PPO to make the policy more efficient.</p>
             </div>
 
             <!-- References -->
@@ -179,7 +231,7 @@
                     <li><a href="https://arxiv.org/abs/1703.09327" target="_blank">DART: Noise Injection for Robust Imitation Learning</a></li>
                     <li><a href="https://arxiv.org/abs/1011.0686" target="_blank">A Reduction of Imitation Learning and Structured Prediction to No-Regret Online Learning</a></li>
                 </ol>
-        </div>
+            </div>
     </div>
 </div>
 
